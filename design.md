@@ -5,7 +5,7 @@ The Front face is represented by the [0] array, the Up face is represented by th
 
 This immediately gives us a useful relationship, where any face's opposite face is 3 away. We can make an easy getOppositeFace() function by adding 3 and reducing to mod6.
 
-The coordinates of the stickers on the face are modeled after this image https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Rubik%E2%80%99s_cube_colors.svg/220px-Rubik%E2%80%99s_cube_colors.svg.png
+The coordinates of the stickers on the face are modeled after this image ![Rubiks cube](rubikscube/Rubik’s_cube_colors.svg.png)
 
 # getEdge/getCorner
 Each edge piece contains two stickers, where two faces meet. It would be useful to create a function that takes one edge sticker and returns the sticker on the other side of the edge.
