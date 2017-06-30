@@ -20,6 +20,7 @@ Each corner piece contains three stickers, where three faces meet. If we create 
 Similarly some of these stickers have clear patterns on where their other corner sticker is.
 
 
+
 Using the getEdge() function we can create a getEdgePiece(a,b) that checks each edge sticker to see if its contents are color a, and check the getEdge result to see if its contents are color b. Then it would return the results as a list, such that result[0-2] correspond to color a and result[3-5] correspond to color b.
 
 Similarly we can use the getCorner() to create a getCornerPiece(a,b,c) to check each corner sticker and its adjacent stickers to find the corner piece that matches the colors we're looking for.
