@@ -11,7 +11,7 @@ def getOppositeFace(x): #given a face, returns the opposite face
 
 def getEdge(x,y,z): #grabs the adjacent sticker of an edge piece given an edge sticker
   m = x%3 #determines which facepair (front/back left/right) etc
-  if m==0:
+  if m==0: #front or back
     c=1
     if y==0:
       a=1+x
@@ -24,7 +24,7 @@ def getEdge(x,y,z): #grabs the adjacent sticker of an edge piece given an edge s
     x = x/3
     b = 2-(2*x)
     return [a,b,c]
-  if m==1:
+  if m==1: #top or bottom
     i=x-1
     if y==0:
       a=3
@@ -50,7 +50,7 @@ def getEdge(x,y,z): #grabs the adjacent sticker of an edge piece given an edge s
     else:
       c=0
     return [a,b,c]
-  if m==2:
+  if m==2: #left or right
     i=x-2
     if y==0:
       a=3
@@ -77,7 +77,7 @@ def getEdge(x,y,z): #grabs the adjacent sticker of an edge piece given an edge s
   sys.exit()
 
 def getCorner(x,y,z): #gets the next corner sticker in a clockwise orientation
-  if x%3==0:
+  if x%3==0: #front or back face
     if y==z:
       if y==2:
         a = 2
@@ -93,7 +93,7 @@ def getCorner(x,y,z): #gets the next corner sticker in a clockwise orientation
     b = 2-x
     c = 2-x
     return [a,b,c]
-  if x%3==1:
+  if x%3==1: #top or bottom face
     i = x-1
     if y==z:
       if y==2:
@@ -118,7 +118,7 @@ def getCorner(x,y,z): #gets the next corner sticker in a clockwise orientation
       else:
         c = 0
     return [a,b,c]
-  if x%3==2:
+  if x%3==2: #left or right face
     i = x-2
     if y==z:
       if y==2:
@@ -152,7 +152,9 @@ class cube():
   def __init__(self,content=[[[i for x in range(3)] for y in range(3)] for i in colorlist]):
     self.content = content
   
-  def getEdgePiece(self,a,b): #given two colors returns the coordinates of those pieces such that returnlist[0-2] contains the first color coordinates and returnlist[3-5] contain the second color coordinates
+  #given two colors returns the coordinates of those pieces such that returnlist[0-2] contains the first color coordinates and 
+  #returnlist[3-5] contain the second color coordinates
+  def getEdgePiece(self,a,b): 
     for i in range(6):
       tryPiece = getEdge(i,0,1)
       if self.content[i][0][1]==a:
@@ -184,14 +186,15 @@ class cube():
           return tryPiece+[i,2,1]
     return ['error']
   
-  def getCornerPiece(self,a,b,c): #given three colors, returns a list of coordinates of that corner piece such that returnlist[0-2] give the first colors coordinates etc  
+  #given three colors, returns a list of coordinates of that corner piece such that returnlist[0-2] give the first colors coordinates etc  
+  def getCornerPiece(self,a,b,c): 
     for i in range(6):
       for j in (0,2):
         for k in (0,2):
           if self.content[i][j][k]==a:
-            i2,j2,k2 = getCorner(i,j,k)
+            i2,j2,k2 = getCorner(i,j,k) #checks the next sticker clockwise
             if self.content[i2][j2][k2]==b:
-              i3,j3,k3 = getCorner(i2,j2,k2)
+              i3,j3,k3 = getCorner(i2,j2,k2) #checks the last sticker clockwise
               if self.content[i3][j3][k3]==c:
                 return [i,j,k,i2,j2,k2,i3,j3,k3]
             elif self.content[i2][j2][k2]==c:
@@ -235,7 +238,8 @@ class cube():
   
   def rotateUp(self):
     self.content[1] = rotatecw(self.content[1])
-    self.content[5] = rotateccw(self.content[5])
+    #some faces need to be rotated so that the columns can be swapped with rows or vis versa, they'll be unrotated following the swap step
+    self.content[5] = rotateccw(self.content[5]) 
     self.content[3] = rotatecw(rotatecw(self.content[3]))
     self.content[2] = rotatecw(self.content[2])
     self.content[0][0], self.content[5][0], self.content[3][0], self.content[2][0] = self.content[2][0], self.content[0][0], self.content[5][0], self.content[3][0] 
@@ -301,6 +305,7 @@ class cube():
       if i=='L':
         self.rotateLeft()
   
+  #each step in the solve step solves 4 pieces at a time. Each successive step only uses algorithms that preserve the already solved steps.
   def solve(self):
     #Step 1, solving the edgepieces in the bottom layer
     print('bottom cross')
@@ -478,7 +483,7 @@ class cube():
         if nextPiece[3]==colors[i] and nextPiece[6]==colors[j]:
           if debug:
             print('case1') #corner is in the right place
-        else: #corner is in an adjacent corner position
+        else: #corner is in on bottom layer but in the wrong spot
           x = faces[nextPiece[6]]
           self.runAlgorithm(x + 'U' + x + x + x)
           nextPiece = self.getCornerPiece('o',i,j)
@@ -495,7 +500,7 @@ class cube():
           stack = x + x + x +'UUU' + x
           self.runAlgorithm(stack)
           if debug:
-            print('case2-3')
+            print('case2-4')
       elif nextPiece[6]==4: #case5-8 corner is on the bottom layer but twisted cw
         x = faces[nextPiece[0]]
         self.runAlgorithm(x + x + x + 'UUU' + x)
@@ -667,11 +672,11 @@ class cube():
     if debug:
       self.checkCube()
       self.printCube()
-    if count==0:
+    if count==0: #none of the edge pieces are oriented correctly
       self.runAlgorithm('FRURRRUUUFFFUUFURUUURRRFFF')
       if debug:
         print('case1')
-    elif count==2:
+    elif count==2: #2 of the edge pieces are oriented correctly
       count = 0
       while(self.content[1][1][2]!='r'):
         self.rotateUp()
@@ -679,11 +684,11 @@ class cube():
         if(count==5):
           print('topcross1 broken')
           sys.exit()
-      if self.content[1][1][0]=='r':
+      if self.content[1][1][0]=='r': #the two edge pieces are across from each other
         self.runAlgorithm('FRURRRUUUFFF')
         if debug:
           print('case2')
-      else:
+      else: #the two edge pieces are adjacent to each other
         if self.content[1][2][1]=='r':
           self.rotateUp()
           self.rotateUp()
@@ -694,14 +699,9 @@ class cube():
         self.runAlgorithm('FURUUURRRFFF')
         if debug:
           print('case3')
-    else:
+    else: #all 4 edge pieces are already correctly oriented
       if debug:
         print('case4') #cross is already solved
-    count = 0
-    for i in colors:
-      nextPiece = self.getEdgePiece('r',i)
-      if(nextPiece[0]==1):
-        count = count + 1
     if debug:
       self.checkCube()
       
@@ -714,10 +714,10 @@ class cube():
           count = count + 1
     if debug:
       self.checkCube()
-    if count==4:
+    if count==4: #all 4 corners are already oriented
       if debug:
         print('case1')
-    elif count==0:
+    elif count==0: #none of the corners are oriented correctly
       if debug:
         print('case2-3')
       count = 0
@@ -726,14 +726,14 @@ class cube():
         count = count + 1
         if(count==5):
           sys.exit()
-      if self.content[0][0][2]=='r':
-        if self.content[3][2][0]=='r':  
+      if self.content[0][0][2]=='r': 
+        if self.content[3][2][0]=='r': #two pairs of corners oriented the opposite way  
           self.runAlgorithm('RUURRRUUURURRRUUURUUURRR')
         else:
-          self.runAlgorithm('URUURRUUURRUUURRUUR')
+          self.runAlgorithm('URUURRUUURRUUURRUUR') #all corners are oriented the same way
       else:
-        self.runAlgorithm('UURUURRUUURRUUURRUUR')
-    elif count==1:
+        self.runAlgorithm('UURUURRUUURRUUURRUUR') #all corners are oriented the same way
+    elif count==1: #one corner oriented correctly, all three other corners are forced to be oriented in the same way
       if debug:
         print('case4-5')
       count = 0
@@ -745,28 +745,28 @@ class cube():
       if self.content[0][0][2]=='r':
         self.runAlgorithm('RURRRURUURRR')
       else:
-        self.runAlgorithm('UUULLLUUULUUULLLUUL')
-    else:
+        self.runAlgorithm('UUULLLUUULUUULLLUUL') #mirror of the above algorithm
+    else: #2 corners are oriented correctly
       count = 0 
       while(self.content[1][0][0]!='r'):
         self.rotateUp()
         count = count + 1
         if(count==5):
           sys.exit()
-      if self.content[1][2][2]=='r':
+      if self.content[1][2][2]=='r': #2 corners oriented correctly are on opposite sides of the cube
         if self.content[0][0][0]!='r':
           self.rotateUp()
           self.rotateUp()
         self.runAlgorithm('RRRFRBBBRRRFFFRB')
         if debug:
           print('case6')
-      else:
+      else: #2 corners oriented correctly are adjacent to each other
         if self.content[1][0][2]!='r':
           self.rotateUp()
-        if self.content[0][0][0]=='r':
+        if self.content[0][0][0]=='r': #unoriented corners are twisted towards the front face
           self.runAlgorithm('RRDRRRUURDDDRRRUURRR')
         else:
-          self.runAlgorithm('RURRRURUURRRUURUURRUUURRUUURRUUR')
+          self.runAlgorithm('RURRRURUURRRUURUURRUUURRUUURRUUR') #unoriented corners are twisted away from the front face
         if debug:
           print('case7-8')
     if debug:
@@ -775,7 +775,7 @@ class cube():
     #Step 6 permuting the corner pieces in the top layer
     print('permute corners')
     count = 0
-    while((self.content[0][0][0]!=self.content[0][0][2])&(count<4)):
+    while((self.content[0][0][0]!=self.content[0][0][2])&(count<4)): #rotating the top face 4 times to check each if the front corners match
       self.rotateUp()
       count = count + 1
       if count==5:
@@ -785,15 +785,15 @@ class cube():
       self.checkCube()
       test.printCube()
       print(count)
-    if count<4:
-      if self.content[3][2][0]==self.content[3][2][2]:
+    if count<4: #front corners match if count is less than 4 because loop broke
+      if self.content[3][2][0]==self.content[3][2][2]: #front corners match and back corners match, therefore all corners are solved
         if debug:
           print('case1')
-      else:
+      else: #swap the back two corners
         self.runAlgorithm('UUURUUULLLURRRUULUUULLLUUL')
         if debug:
           print('case2')
-    else:
+    else: #since no corners could be found matching, corners must be swapped twice
       self.runAlgorithm('RUUULLLURRRUULUUULLLUULUURUUULLLURRRUULUUULLLUUL')
     if debug:
       self.checkCube()
@@ -805,48 +805,48 @@ class cube():
       self.printCube()
     nextPiece = self.getCornerPiece('y','g','r')
     count = 0
-    while(nextPiece[0]!=0):
+    while(nextPiece[0]!=0): #ensuring that the corners are in the right place
       self.rotateUp()
       nextPiece = self.getCornerPiece('y','g','r')
       count = count + 1
       if(count==5):
         sys.exit()
     count = 0
-    for i in colors:
+    for i in colors: #checks to see how many edge pieces are in the right place
       nextPiece = self.getEdgePiece('r',i)
       if nextPiece[3]==colors[i]:
         count = count + 1
-    if count==4:
+    if count==4: #all edge pieces are in the right place
       if debug:
         print('case1')
-    elif count==1:
+    elif count==1: #1 edge piece is in the right place, the 3 others must be rotated
       count2 = 0
-      while(self.content[0][0][0]!=self.content[0][0][1]):
+      while(self.content[0][0][0]!=self.content[0][0][1]): #rotate top layer until the already solved edge piece is in the front layer
         self.rotateUp()
         count2 = count2 + 1
         if(count2==5):
           sys.exit()
-      if self.content[3][2][1]==self.content[2][0][0]:
+      if self.content[3][2][1]==self.content[2][0][0]: #edge pieces are rotated clockwise
         self.runAlgorithm('UURRURURRRUUURRRUUURRRURRR')
       else:
-        self.runAlgorithm('UURUUURURURUUURRRUUURR')
+        self.runAlgorithm('UURUUURURURUUURRRUUURR') #edge pieces are rotated counterclockwise
       if debug:
         print('case2-3')
-    else:
-      if self.content[0][0][1]=='w':
+    else: #all edge pieces needs to be moved
+      if self.content[0][0][1]=='w': #each edge piece needs to be moved across the cube
         self.runAlgorithm('RRURURRRUUURRRUUURRRURRRUUURRURURRRUUURRRUUURRRURRR')
         if debug:
           print('case3')
-      elif self.content[0][0][1]=='b':
+      elif self.content[0][0][1]=='b': #front and right edge piece needs to be swapped, while left and back edge piece needs to be swapped
         self.runAlgorithm('RUUURURURUUURRRUUURRUUURUUURURURUUURRRUUURR')
         if debug:
           print('case4')
-      else:
+      else: #front and left edge piece needs to be swapped, while back and right edge piece needs to be swapped
         self.runAlgorithm('RRURURRRUUURRRUUURRRURRRURRURURRRUUURRRUUURRRURRR')
         if debug:
           print('case5')
     count = 0
-    while(self.content[0][0][0]!='y'):
+    while(self.content[0][0][0]!='y'): #rotate top layer until cube is solved
       self.rotateUp()
       count = count + 1
       if(count==5):
