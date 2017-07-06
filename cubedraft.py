@@ -2,9 +2,9 @@ import sys
 colorlist = 'yrbwog'
 faces = {0:'F',1:'U',2:'R',3:'B',4:'D',5:'L'}
 def rotatecw(x): #rotates a list 90 degrees clockwise
-  return list(map(list,zip(*x[::-1])))
+  return list(map(list,zip(*x[::-1]))) #zip *x creates a transpose in a tuple, if we reverse the elements BEFORE the zip, we'll get a 90 degree rotation. Then list(map(list,result)) will return it as an expected list
 def rotateccw(x): #rotates a list 90 degrees counterclockwise
-  return list(map(list,zip(*x)[::-1]))
+  return list(map(list,zip(*x)[::-1])) #zip *x creates a transpose in a tuple, if we reverse the elements AFTER the zip, we'll get a 270 degree rotation. Then list(map(list,result)) will return it as an expected list
 def getOppositeFace(x): #given a face, returns the opposite face
   x = x+3
   return x%6
